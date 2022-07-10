@@ -8,6 +8,8 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import VecFrameStack
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.vec_env import DummyVecEnv
+from stable_baselines3.common.callbacks import EvalCallback,StopTrainingOnRewardThreshold
+
 
 import glob
 import pickle
@@ -195,10 +197,10 @@ def get_env():
     return env
 
 def load_model(env):
-    return PPO.load(model_path,env)
+    return PPO.load(os.path.join(model_path,"best_model"),env)
 
 def train_model(model, amount_of_steps):
-    model.learn(total_timesteps=amount_of_steps)
+    model.learn(total_timesteps=amount_of_steps,callback=eval_callback)
     model.save(model_path)
 
 
@@ -211,7 +213,10 @@ def get_new_model(env):
 # MAIN
 g_env = get_env()
 g_env.reset()
+#load the previous best model in and continue training that one
 model_path = os.path.join("Models","Oops_Model")
+#add callback that saves the best model -> you can quit whenever really
+eval_callback = EvalCallback(g_env,eval_freq=20000,best_model_save_path=model_path,verbose=1)
 #test_environment_manuel(g_env)
 #g_model = get_new_model(g_env)
 g_model = load_model(g_env)
