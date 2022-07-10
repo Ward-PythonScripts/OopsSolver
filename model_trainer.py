@@ -19,7 +19,7 @@ Grid format: pieces: standard piece -> 1, wizard -> 20, hat -> 10, empty -> 0, d
 class OopsEnv(Env):
     def __init__(self):
         # Actions we can take: from 25 positions to 25 other positions -> 5 bit + 5 bit = 10bit
-        self.action_space = MultiBinary(10)
+        self.action_space = MultiDiscrete([25,25])
         # Observations is gewoon het speelbord
         self.observation_space = MultiDiscrete([[21, 21, 21, 21, 21], [21, 21, 21, 21, 21], [21, 21, 21, 21, 21]
                                                    , [21, 21, 21, 21, 21], [21, 21, 21, 21, 21]])
@@ -39,8 +39,21 @@ class OopsEnv(Env):
         # placeholder for info
         info = {}
         # check if attempted step is a valid step and calculate reward
-        print(action)
-        reward = 1
+        begin_position = action[0]
+        end_position = action[1]
+
+        if not valid_pickup(begin_position):
+            reward = -20
+            return self.state,reward,done,info
+        elif not valid_end(end_position):
+            reward = -15
+            return self.state,reward,done,info
+
+
+
+
+
+        reward = 0
 
 
 
@@ -55,6 +68,26 @@ class OopsEnv(Env):
         return self.state
 
 
+def valid_pickup(pos):
+    #target_pos is the position we are trying to pick up, this needs to be valid
+
+    x,y = pos2indices(pos)
+    print(pos, "indices should be: ", x, y)
+
+def valid_end(end_pos):
+    #we need to put the pieces down on a valid space(not on the wizards' head) and on another piece
+    pass
+
+def pos2indices(pos):
+    pos_var = pos
+    for x in range(0,5):
+        for y in range(0,5):
+            if pos_var<= 0:
+                return x,y
+            pos_var -= 1
+
+    return 4,4
+
 def get_grid():
     file_names = glob.glob("Levels/*")
     if len(file_names) == 0:
@@ -62,10 +95,8 @@ def get_grid():
         exit(-1)
     select_nr = random.randint(0, len(file_names) - 1)
     selected_level = file_names[select_nr]
-    print(selected_level)
     with open(os.path.join(selected_level), "rb") as f:
         grid = pickle.load(f)
-        print(np.array(grid))
         return np.array(grid)
 
 
@@ -93,6 +124,7 @@ def get_env():
 
 # MAIN
 g_env = get_env()
+test_environment(g_env)
 """
 
 def CheckGameFinished(a_board):
