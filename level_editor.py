@@ -17,6 +17,10 @@ def get_piece_string():
     nr_str = str(piece_selector)
     if piece_selector == 0:
         nr_str = "   "
+    elif piece_selector == 20:
+        nr_str = "W"
+    elif piece_selector == 10:
+        nr_str = "H"
     piece_string = "  " + nr_str
     if piece_selector > 9:
         piece_string += " "
