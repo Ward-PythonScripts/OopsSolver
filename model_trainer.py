@@ -44,20 +44,20 @@ class OopsEnv(Env):
         bx, by = pos2indices(begin_position)
         end_position = action[1]
         ex, ey = pos2indices(end_position)
-        print("Registered input, from ", bx , by, " to ", ex, ey)
+        #print("Registered input, from ", bx , by, " to ", ex, ey)
         if not valid_pickup(bx, by, self.state):
             reward = -20
-            print("Not valid pickup")
+            #print("Not valid pickup")
             return self.state, reward, done, info
         elif not valid_end(ex, ey, self.state):
             reward = -15
-            print("Not valid end")
+            #print("Not valid end")
             return self.state, reward, done, info
         elif not valid_steps(bx, by, ex, ey, self.state):
             reward = -1
-            print("Not valid amount of steps")
+            #print("Not valid amount of steps")
             return self.state, reward, done, info
-        print("Valid action")
+        #print("Valid action")
         # else, the action was valid, could still not be the best one to complete the game ofcourse
         reward = 20
         self.state = execute_step(bx, by, ex, ey, self.state)
