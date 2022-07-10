@@ -7,6 +7,8 @@ import os
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import VecFrameStack
 from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.vec_env import DummyVecEnv
+
 import glob
 import pickle
 from stable_baselines3.common.env_checker import check_env
@@ -21,8 +23,7 @@ class OopsEnv(Env):
         # Actions we can take: from 25 positions to 25 other positions -> 5 bit + 5 bit = 10bit
         self.action_space = MultiDiscrete([25, 25])
         # Observations is gewoon het speelbord
-        self.observation_space = MultiDiscrete([[21, 21, 21, 21, 21], [21, 21, 21, 21, 21], [21, 21, 21, 21, 21]
-                                                   , [21, 21, 21, 21, 21], [21, 21, 21, 21, 21]])
+        self.observation_space = MultiDiscrete(np.array([[21, 21, 21, 21, 21], [21, 21, 21, 21, 21], [21, 21, 21, 21, 21], [21, 21, 21, 21, 21], [21, 21, 21, 21, 21]]))
         # get the grid from a random level from the level directory
         # state = grid
         self.state = get_grid()
@@ -44,20 +45,20 @@ class OopsEnv(Env):
         bx, by = pos2indices(begin_position)
         end_position = action[1]
         ex, ey = pos2indices(end_position)
-        #print("Registered input, from ", bx , by, " to ", ex, ey)
+        # print("Registered input, from ", bx , by, " to ", ex, ey)
         if not valid_pickup(bx, by, self.state):
             reward = -20
-            #print("Not valid pickup")
+            # print("Not valid pickup")
             return self.state, reward, done, info
         elif not valid_end(ex, ey, self.state):
             reward = -15
-            #print("Not valid end")
+            # print("Not valid end")
             return self.state, reward, done, info
         elif not valid_steps(bx, by, ex, ey, self.state):
             reward = -1
-            #print("Not valid amount of steps")
+            # print("Not valid amount of steps")
             return self.state, reward, done, info
-        #print("Valid action")
+        # print("Valid action")
         # else, the action was valid, could still not be the best one to complete the game ofcourse
         reward = 20
         self.state = execute_step(bx, by, ex, ey, self.state)
@@ -77,14 +78,13 @@ class OopsEnv(Env):
             for x in range(len(self.state[0])):
                 str_element = str(self.state[y][x])
                 if len(str_element) <= 1:
-                    #we need to add a space to make the print more alligned
+                    # we need to add a space to make the print more alligned
                     row_str += "     " + str_element
                 else:
                     row_str += "    " + str_element
             print(row_str)
             row_str = ""
         print("#" * 30)
-
 
     def reset(self):
         self.state = get_grid()
@@ -134,6 +134,7 @@ def valid_steps(bx, by, ex, ey, grid):
     else:
         return False
 
+
 def is_game_won(grid):
     # if the game is won we can give the ai a big bonus
     amountOfPiecesFound = 0
@@ -179,7 +180,7 @@ def test_environment_manuel(env):
 
         while not done:
             env.render()
-            #action = env.action_space.sample()
+            # action = env.action_space.sample()
             action = list(map(int, input("\nEnter the numbers : ").strip().split()))
             n_state, reward, done, info = env.step(action)
             score += reward
@@ -189,11 +190,46 @@ def test_environment_manuel(env):
 
 def get_env():
     env = OopsEnv()
-    #check_env(env, warn=True)
+    check_env(env, warn=True)
     return env
 
 
-# MAIN
-g_env = get_env()
-test_environment_manuel(g_env)
+def train_model(model, amount_of_steps):
+    model.learn(total_timesteps=amount_of_steps)
+    model.save('PPO')
 
+
+def get_model(env):
+    log_path = os.path.join("Training", "Logs")
+    model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=log_path)
+    return model
+
+
+# # MAIN
+# g_env = get_env()
+# g_env.reset()
+# # test_environment_manuel(g_env)
+# g_model = get_model(g_env)
+# #train_model(g_model, 20000)
+
+env=OopsEnv()
+
+env.reset()
+
+episodes = 5
+for episode in range(1, episodes + 1):
+    state = env.reset()
+    done = False
+    score = 0
+
+    while not done:
+        env.render()
+        action = env.action_space.sample()
+        n_state, reward, done, info = env.step(action)
+        score += reward
+    print('Episode:{} Score:{}'.format(episode, score))
+env.close()
+log_path = os.path.join('Training', 'Logs')
+model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=log_path)
+model.learn(total_timesteps=4000)
+model.save('test')
