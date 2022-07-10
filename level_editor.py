@@ -176,6 +176,6 @@ def main():
 
 
 # main
-# pieces: standard piece -> 1, wizard -> 20, hat -> 30, empty -> 0, double_stack -> 2
+# pieces: standard piece -> 1, wizard -> 20, hat -> 10, empty -> 0, double_stack -> 2
 
 main()
