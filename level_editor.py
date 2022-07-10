@@ -28,6 +28,7 @@ def get_next_name():
     file_names = glob.glob("Levels/*")
     if len(file_names) == 0:
         return "level0.pickle"
+    file_names.sort(key=lambda item:(len(item),item))
     last_name = file_names[len(file_names)-1]
     last_file = os.path.basename(last_name)
     last_file = last_file.replace(".pickle","")
@@ -87,7 +88,7 @@ def generate_option_buttons():
 def generate_save_buttons():
     save_button = tkinter.Button(master,text="save",command=lambda : save_level())
     save_button.grid(row = 0, column=option_buttons_column+1)
-    refresh_button = tkinter.Button(master,text="refresh",command=lambda : refresh_level())
+    refresh_button = tkinter.Button(master,text="clear",command=lambda : refresh_level())
     refresh_button.grid(row = 1, column=option_buttons_column+1)
     load_button = tkinter.Button(master,text="load",command=lambda : load_level())
     new_button = tkinter.Button(master,text="new",command=lambda : new_level())
