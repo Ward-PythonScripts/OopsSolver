@@ -52,6 +52,18 @@ def generate_field():
         buttons.append(rowButtons)
     return buttons
 
+def generate_field_with_grid():
+    global piece_selector
+    master.title("level: " + level_name)
+    master.geometry("350x275")
+    for y in range(0, 5):
+        for x in range(0, 5):
+            btn_text = tkinter.StringVar()
+            piece_selector = grid[y][x]
+            btn_text.set(get_piece_string())
+            button = tkinter.Button(master, textvariable=btn_text,
+                                    command=lambda l_x=x, l_y=y, l_txt=btn_text: button_callback(l_x, l_y, l_txt))
+            button.grid(row=y, column=x)
 
 def button_callback(x, y, btn_text):
     global grid
@@ -100,10 +112,16 @@ def refresh_level():
     piece_selector = 0
     build_gui()
 def load_level():
-    global level_name
+    global level_name, grid,piece_selector
     load_name = filedialog.askopenfilename(initialdir=os.path.join("Levels"))
+    if load_name == "":
+        level_name = get_next_name()
+        refresh_level()
     level_name = os.path.basename(load_name)
-    refresh_level()
+    with open(os.path.join("Levels",level_name),"rb") as f:
+        grid = pickle.load(f)
+    piece_selector = 0
+    build_gui_no_new_grid()
 def delete_level():
     os.remove(os.path.join("Levels",level_name))
     new_level()
@@ -130,6 +148,13 @@ def standard_piece_selector():
 def double_piece_selector():
     global piece_selector
     piece_selector = 2
+
+def build_gui_no_new_grid():
+    #does the same as build_gui, except this time the grid isn't loaded again
+    generate_field_with_grid()
+    generate_option_buttons()
+    generate_save_buttons()
+    master.mainloop()
 
 def build_gui():
     global grid
