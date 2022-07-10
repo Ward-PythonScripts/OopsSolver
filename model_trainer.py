@@ -70,21 +70,23 @@ class OopsEnv(Env):
         else:
             # one step done a few more to go
             return self.state, reward, done, info
-        return self.state,0,done,info
 
     def render(self):
         print("#" * 30)
         row_str = ""
-        for y in range(len(self.state)):
-            for x in range(len(self.state[0])):
-                str_element = str(self.state[y][x])
-                if len(str_element) <= 1:
-                    # we need to add a space to make the print more alligned
-                    row_str += "     " + str_element
-                else:
-                    row_str += "    " + str_element
-            print(row_str)
-            row_str = ""
+        row_ind = 0
+        for x in range(len(self.state)):
+            str_element = str(self.state[x])
+            if len(str_element) <= 1:
+                # we need to add a space to make the print more alligned
+                row_str += "     " + str_element
+            else:
+                row_str += "    " + str_element
+            row_ind +=1
+            if row_ind >= 5:
+                print(row_str)
+                row_str = ""
+                row_ind = 0
         print("#" * 30)
 
     def reset(self):
@@ -98,7 +100,7 @@ def execute_step(begin_pos,end_pos,grid):
     # add the two new spaces up
     grid[end_pos] += grid[begin_pos]
     # # where the piece used to be there will now be an empty space
-    # grid[begin_pos] = 0
+    grid[begin_pos] = 0
     return grid
 
 
@@ -207,7 +209,7 @@ def get_model(env):
 # MAIN
 g_env = get_env()
 g_env.reset()
-# test_environment_manuel(g_env)
+#test_environment_manuel(g_env)
 g_model = get_model(g_env)
 train_model(g_model, 100)
 
