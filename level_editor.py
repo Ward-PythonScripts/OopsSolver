@@ -3,6 +3,7 @@ import tkinter
 import glob
 import pickle
 import re
+from tkinter import filedialog
 
 piece_selector = 0
 level_name = ""
@@ -70,10 +71,12 @@ def generate_option_buttons():
 
 def generate_save_buttons():
     save_button = tkinter.Button(master,text="save",command=lambda : save_level())
-    save_button.grid(row = 1, column=option_buttons_column+1)
+    save_button.grid(row = 0, column=option_buttons_column+1)
     refresh_button = tkinter.Button(master,text="refresh",command=lambda : refresh_level())
-    refresh_button.grid(row = 2, column=option_buttons_column+1)
+    refresh_button.grid(row = 1, column=option_buttons_column+1)
     load_button = tkinter.Button(master,text="load",command=lambda : load_level())
+    new_button = tkinter.Button(master,text="new",command=lambda : new_level())
+    new_button.grid(row=2,column=option_buttons_column+1)
     load_button.grid(row=3,column=option_buttons_column+1)
     delete_button = tkinter.Button(master,text="delete",command=lambda : delete_level())
     delete_button.grid(row=4,column=option_buttons_column+1)
@@ -94,7 +97,10 @@ def refresh_level():
     piece_selector = 0
     build_gui()
 def load_level():
-    pass
+    global level_name
+    load_name = filedialog.askopenfilename(initialdir=os.path.join("Levels"))
+    level_name = os.path.basename(load_name)
+    refresh_level()
 def delete_level():
     print("deleting the following path")
     print(os.path.join("Levels",level_name))
