@@ -11,3 +11,6 @@ Project that learns to solve the OOPS game with Reinforcement Learning
  Anaconda documentation: https://docs.conda.io/projects/conda/en/latest/index.html
  Stable baselines3: https://stable-baselines3.readthedocs.io/en/master/index.html
  Gym environment: https://www.gymlibrary.ml/
+
+in order to use tensorboard:
+tensorboard --logdir=Logs

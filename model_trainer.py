@@ -65,7 +65,7 @@ class OopsEnv(Env):
         if is_game_won(self.state):
             reward = 200
             done = True
-            print("A game was completed, you did it you crazy son of a bitch, you did it :)")
+            #print("A game was completed, you did it you crazy son of a bitch, you did it :)")
             return self.state, reward, done, info
         else:
             # one step done a few more to go
@@ -194,14 +194,16 @@ def get_env():
     check_env(env, warn=True)
     return env
 
+def load_model(env):
+    return PPO.load(model_path,env)
 
 def train_model(model, amount_of_steps):
     model.learn(total_timesteps=amount_of_steps)
-    model.save(os.path.join("Models","Oops_Model"))
+    model.save(model_path)
 
 
-def get_model(env):
-    log_path = os.path.join("Training", "Logs")
+def get_new_model(env):
+    log_path = os.path.join("Logs")
     model = PPO("MlpPolicy", env, verbose=1, tensorboard_log=log_path)
     return model
 
@@ -209,7 +211,9 @@ def get_model(env):
 # MAIN
 g_env = get_env()
 g_env.reset()
+model_path = os.path.join("Models","Oops_Model")
 #test_environment_manuel(g_env)
-g_model = get_model(g_env)
-train_model(g_model, 100)
+#g_model = get_new_model(g_env)
+g_model = load_model(g_env)
+train_model(g_model, 4000000)
 
