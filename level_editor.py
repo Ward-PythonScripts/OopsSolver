@@ -14,7 +14,10 @@ option_buttons_column = 6  # constant
 
 def get_piece_string():
     global piece_selector
-    piece_string = "  " + str(piece_selector)
+    nr_str = str(piece_selector)
+    if piece_selector == 0:
+        nr_str = "   "
+    piece_string = "  " + nr_str
     if piece_selector > 9:
         piece_string += " "
     else:
@@ -102,8 +105,8 @@ def load_level():
     level_name = os.path.basename(load_name)
     refresh_level()
 def delete_level():
-    print("deleting the following path")
-    print(os.path.join("Levels",level_name))
+    os.remove(os.path.join("Levels",level_name))
+    new_level()
 def wizard_piece_selector():
     global piece_selector
     piece_selector = 20
