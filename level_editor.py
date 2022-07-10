@@ -1,7 +1,13 @@
+import os.path
 import tkinter
+import glob
+import pickle
+import re
 
 piece_selector = 0
+level_name = ""
 grid = []
+master = tkinter.Tk()
 option_buttons_column = 6  # constant
 
 
@@ -14,10 +20,20 @@ def get_piece_string():
         piece_string += "  "
     return piece_string
 
+def get_next_name():
+    file_names = glob.glob("Levels/*")
+    if len(file_names) == 0:
+        return "level0.pickle"
+    last_name = file_names[len(file_names)-1]
+    last_file = os.path.basename(last_name)
+    last_file = last_file.replace(".pickle","")
+    numb = re.findall(r'\d+',last_file)
+    int_numb = int(numb[0])
+    new_name = last_file[0:len(last_file)-len(numb[0])] + str(int_numb+1) + ".pickle"
+    return new_name
 
 def generate_field():
-    master = tkinter.Tk()
-    master.title("generate field")
+    master.title("level: " + level_name)
     master.geometry("350x275")
     buttons = []
     for y in range(0, 5):
@@ -30,15 +46,16 @@ def generate_field():
             button.grid(row=y, column=x)
             rowButtons.append(0)
         buttons.append(rowButtons)
-    return master, buttons
+    return buttons
 
 
 def button_callback(x, y, btn_text):
+    global grid
     grid[y][x] = piece_selector
     btn_text.set(get_piece_string())
 
 
-def generate_option_buttons(master):
+def generate_option_buttons():
     # standard piece, wizard, hat, empty
     wizard_button = tkinter.Button(master, text="wizard piece", command=lambda: wizard_piece_selector())
     wizard_button.grid(row=0, column=option_buttons_column)
@@ -51,7 +68,36 @@ def generate_option_buttons(master):
     empty_button = tkinter.Button(master, text="empty space", command=lambda: empty_piece_selector())
     empty_button.grid(row=4, column=option_buttons_column)
 
+def generate_save_buttons():
+    save_button = tkinter.Button(master,text="save",command=lambda : save_level())
+    save_button.grid(row = 1, column=option_buttons_column+1)
+    refresh_button = tkinter.Button(master,text="refresh",command=lambda : refresh_level())
+    refresh_button.grid(row = 2, column=option_buttons_column+1)
+    load_button = tkinter.Button(master,text="load",command=lambda : load_level())
+    load_button.grid(row=3,column=option_buttons_column+1)
+    delete_button = tkinter.Button(master,text="delete",command=lambda : delete_level())
+    delete_button.grid(row=4,column=option_buttons_column+1)
 
+
+def save_level():
+    global level_name
+    with open(os.path.join("Levels",level_name),"wb") as f:
+        pickle.dump(grid,f)
+    new_level()
+def new_level():
+    global level_name
+    level_name = get_next_name()
+    refresh_level()
+
+def refresh_level():
+    global piece_selector
+    piece_selector = 0
+    build_gui()
+def load_level():
+    pass
+def delete_level():
+    print("deleting the following path")
+    print(os.path.join("Levels",level_name))
 def wizard_piece_selector():
     global piece_selector
     piece_selector = 20
@@ -76,13 +122,18 @@ def double_piece_selector():
     global piece_selector
     piece_selector = 2
 
+def build_gui():
+    global grid
+    grid = generate_field()
+    generate_option_buttons()
+    generate_save_buttons()
+    master.mainloop()
 
 def main():
-    global grid
-    master, buttons = generate_field()
-    grid = buttons
-    generate_option_buttons(master)
-    master.mainloop()
+    global level_name
+    level_name = get_next_name()
+    build_gui()
+
 
 
 # main
