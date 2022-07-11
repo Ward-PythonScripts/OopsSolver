@@ -62,15 +62,20 @@ class OopsEnv(Env):
             return self.state, reward, done, info
         # print("Valid action")
         # else, the action was valid, could still not be the best one to complete the game ofcourse
-        reward = 20
         self.state = execute_step(begin_position,end_position, self.state)
         if is_game_won(self.state):
             reward = 200
             done = True
             #print("A game was completed, you did it you crazy son of a bitch, you did it :)")
             return self.state, reward, done, info
+        elif no_more_valid_steps(self.state):
+            #print("no more valid steps to take")
+            reward = 0
+            done = True
+            return self.state, reward, done, info
         else:
             # one step done a few more to go
+            reward = 20
             return self.state, reward, done, info
 
     def render(self):
@@ -124,17 +129,47 @@ def valid_end(end_pos, grid):
     else:
         return True
 
+def no_more_valid_steps(grid):
+    # check if there are pieces left on the board and get their position, than check if the distance between any is a
+    # valid distance to cover
+    list_pieces = []
+    for x in range(0,len(grid)-1):
+        if x != 0:
+            #found a piece
+            list_pieces.append(x)
+    for piece_pos in list_pieces:
+        steps = get_piece_steps(grid,piece_pos)
+        for second_piece in list_pieces:
+            if steps == get_piece_distance(piece_pos,second_piece):
+                #we have found a valid option(the piece can reach the other piece
+                #only need to check that that move would be valid
+                if valid_pickup(piece_pos,grid) and valid_end(second_piece,grid):
+                    #there is in fact still a valid move left
+                    return False
+    return True
 
+
+def get_piece_steps(grid,pos):
+    picked_up_piece = grid[pos]
+    # we need to remove the wizards identifier from the equation ( is 20)
+    if picked_up_piece >= 20:
+        picked_up_piece -= 19
+    return picked_up_piece
+
+def get_piece_distance(pos1,pos2):
+    x1,y1 = pos2indices(pos1)
+    x2,y2 = pos2indices(pos2)
+    x_dist = abs(x1 - x2)
+    y_dist = abs(y1 - y2)
+    tot_dist = x_dist + y_dist
+    return tot_dist
 def valid_steps(bx, by, ex, ey,begin_pos, grid):
     # and we need to check if the amount of steps we have done is valid
     x_dist = abs(bx - ex)
     y_dist = abs(by - ey)
     tot_dist = x_dist + y_dist
-    picked_up_piece = grid[begin_pos]
-    # we need to remove the wizards identifier from the equation ( is 20)
-    if picked_up_piece >= 20:
-        picked_up_piece -= 19
-    if tot_dist == picked_up_piece:
+    piece_steps = get_piece_steps(grid,begin_pos)
+    if tot_dist == piece_steps:
         return True
     else:
         return False
@@ -217,8 +252,8 @@ g_env.reset()
 model_path = os.path.join("Models","Oops_Model")
 #add callback that saves the best model -> you can quit whenever really
 eval_callback = EvalCallback(g_env,eval_freq=20000,best_model_save_path=model_path,verbose=1)
-#test_environment_manuel(g_env)
+test_environment_manuel(g_env)
 #g_model = get_new_model(g_env)
-g_model = load_model(g_env)
-train_model(g_model, 4000000)
+#g_model = load_model(g_env)
+#train_model(g_model, 4000000)
 
